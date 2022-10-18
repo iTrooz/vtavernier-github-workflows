@@ -27,3 +27,5 @@ jobs:
 
       - name: Release workflows
         run: yarn release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
