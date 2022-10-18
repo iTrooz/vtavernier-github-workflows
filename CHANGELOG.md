@@ -1,3 +1,10 @@
+# [1.0.0-alpha.2](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2022-10-18)
+
+
+### Bug Fixes
+
+* use GITHUB_TOKEN for semantic-release ([eb920e6](https://github.com/vtavernier/github-workflows/commit/eb920e6d593ee643360b12c7d5029d1b2cc0c709))
+
 # 1.0.0-alpha.1 (2022-10-18)
 
 
