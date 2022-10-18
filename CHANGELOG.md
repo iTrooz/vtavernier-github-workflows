@@ -1,3 +1,10 @@
+# [1.0.0-alpha.3](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2022-10-18)
+
+
+### Features
+
+* update actions/checkout to v3 ([8b9621a](https://github.com/vtavernier/github-workflows/commit/8b9621a29c2e09751782dbc623129b95da5f84db))
+
 # [1.0.0-alpha.2](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2022-10-18)
 
 
