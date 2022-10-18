@@ -12,7 +12,7 @@ on:
       - "**"
 
 jobs:
-  check-workflows:
+  release-workflows:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,3 +24,5 @@ jobs:
 
       - name: Release workflows
         run: yarn release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
