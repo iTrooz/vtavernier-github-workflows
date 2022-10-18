@@ -1,0 +1,26 @@
+# docs: skip
+
+name: Pull request on workflow repository
+
+on:
+  pull_request: {}
+
+jobs:
+  check-workflows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies using yarn
+        run: yarn install --frozen-lockfile
+
+      - name: Run workflow repository checks
+        run: yarn ci:check
+
+      - name: Check commits
+        run: |
+          BASE="${{ github.base_ref }}"
+          git fetch origin "$BASE"
+          yarn run commitlint -f $(git rev-parse "origin/$BASE") -t $(git rev-parse HEAD)
