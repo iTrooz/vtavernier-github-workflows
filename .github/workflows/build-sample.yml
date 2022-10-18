@@ -1,0 +1,12 @@
+# This workflow is a sample to test the
+# [github-workflows](https://github.com/vtavernier/github-workflows)
+# repository.
+
+on:
+  workflow_call: {}
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2

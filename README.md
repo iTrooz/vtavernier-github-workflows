@@ -1,0 +1,23 @@
+# [github-workflows](https://github.com/vtavernier/github-workflows)
+
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/vtavernier/github-workflows?display_name=tag&sort=semver)](https://github.com/vtavernier/github-workflows/releases)
+[![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/vtavernier/github-workflows?display_name=tag&sort=semver&include_prereleases)](https://github.com/vtavernier/github-workflows/releases)
+[![GitHub](https://img.shields.io/github/license/vtavernier/github-workflows)](LICENSE)
+
+Opiniated but reusable versioned workflows for common CI workloads.
+
+## Getting started
+
+Local development of the workflows happens using tools installed as npm packages. To get started:
+
+```bash
+yarn install --frozen-lockfile
+```
+
+## Documentation
+
+Auto-generated documentation for the workflows is available in the [docs/](docs/README.md) directory.
+
+## Author
+
+Vincent Tavernier <v.tavernier@pm.me>

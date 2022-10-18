@@ -1,0 +1,22 @@
+{
+  "scripts": {
+    "docs": "./ci/document-workflows.sh",
+    "docs:check": "./ci/document-workflows.sh --check",
+    "format": "prettier --ignore-path .gitignore --write .",
+    "format:check": "prettier --ignore-path .gitignore --check .",
+    "lint": "run-s -c lint:eslint lint:shell",
+    "lint:fix": "run-s -c lint:eslint:fix",
+    "lint:eslint": "eslint --ignore-path .gitignore .github",
+    "lint:eslint:fix": "eslint --ignore-path .gitignore --fix .github",
+    "lint:shell": "shellcheck **/*.sh",
+    "ci:check": "run-s -c docs:check format:check lint"
+  },
+  "devDependencies": {
+    "eslint": "8.25.0",
+    "eslint-plugin-json-schema-validator": "4.0.2",
+    "eslint-plugin-yml": "1.2.0",
+    "npm-run-all": "4.1.5",
+    "prettier": "2.7.1",
+    "shellcheck": "1.1.0"
+  }
+}
