@@ -2,8 +2,8 @@
   "scripts": {
     "docs": "./ci/document-workflows.sh",
     "docs:check": "./ci/document-workflows.sh --check",
-    "format": "prettier --ignore-path .gitignore --write .",
-    "format:check": "prettier --ignore-path .gitignore --check .",
+    "format": "prettier --ignore-path .gitignore --write . '!CHANGELOG.md'",
+    "format:check": "prettier --ignore-path .gitignore --check . '!CHANGELOG.md'",
     "lint": "run-s -c lint:eslint lint:shell",
     "lint:fix": "run-s -c lint:eslint:fix",
     "lint:eslint": "eslint --ignore-path .gitignore .github",
