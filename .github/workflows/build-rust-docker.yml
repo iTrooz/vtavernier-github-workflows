@@ -171,6 +171,14 @@ on:
         description: Generated tagged Docker image name
         value: ${{ jobs.build-rust-docker.outputs.docker_image_tagged }}
 
+      new_release_published:
+        description: True if a new version is published by semantic-release
+        value: ${{ jobs.build-rust-docker.outputs.new_release_published }}
+
+      new_release_version:
+        description: Version number of the new published release
+        value: ${{ jobs.build-rust-docker.outputs.new_release_version }}
+
 jobs:
   check-rust-docker:
     runs-on: ubuntu-latest
@@ -301,6 +309,8 @@ jobs:
     outputs:
       docker_image_floating: ${{ steps.image.outputs.repository }}:${{ steps.image.outputs.label }}
       docker_image_tagged: ${{ steps.image.outputs.repository_tag }}
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
 
     steps:
       - name: Checkout repository
