@@ -68,6 +68,18 @@ on:
         required: false
         type: string
 
+      rust_checks_rustflags:
+        description: RUSTFLAGS for running check tasks
+        default: -D warnings
+        required: false
+        type: string
+
+      rust_checks_args:
+        description: Common arguments to check tasks
+        default: --all-features
+        required: false
+        type: string
+
       docker_repository:
         description: "Target Docker repository, e.g. ghcr.io/user/project"
         default: ghcr.io/${{ github.repository }}
@@ -114,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      RUSTFLAGS: -D warnings
+      RUSTFLAGS: ${{ inputs.rust_checks_rustflags }}
 
     steps:
       - name: Checkout repository
@@ -165,11 +177,11 @@ jobs:
         if: steps.rustup.outcome == 'success'
 
       - name: Run cargo check
-        run: cargo check
+        run: cargo check ${{ inputs.rust_checks_args }}
         if: steps.rustup.outcome == 'success' && (success() || failure())
 
       - name: Run cargo clippy
-        run: cargo clippy
+        run: cargo clippy ${{ inputs.rust_checks_args }}
         if: steps.rustup.outcome == 'success' && (success() || failure())
 
       - name: Run hadolint
