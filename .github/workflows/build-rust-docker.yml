@@ -44,8 +44,42 @@
 # ```json
 # {
 #   "plugins": [
-#     "@semantic-release/commit-analyzer",
-#     "@semantic-release/release-notes-generator",
+#     [
+#       "@semantic-release/commit-analyzer",
+#       {
+#         "preset": "conventionalcommits",
+#         "releaseRules": [
+#           {
+#             "type": "build",
+#             "scope": "deps",
+#             "release": "patch"
+#           }
+#         ]
+#       }
+#     ],
+#     [
+#       "@semantic-release/release-notes-generator",
+#       {
+#         "preset": "conventionalcommits",
+#         "presetConfig": {
+#           "types": [
+#             {
+#               "type": "feat",
+#               "section": "Features"
+#             },
+#             {
+#               "type": "fix",
+#               "section": "Bug Fixes"
+#             },
+#             {
+#               "type": "build",
+#               "section": "Dependencies and Other Build Updates",
+#               "hidden": false
+#             }
+#           ]
+#         }
+#       }
+#     ],
 #     "@semantic-release/changelog",
 #     [
 #       "@semantic-release/git",
@@ -101,8 +135,9 @@ on:
       semantic_extra_plugins:
         description: List of semantic-release extra plugins to install
         default: |
-          @semantic-release/changelog
-          @semantic-release/git
+          @semantic-release/changelog@6.0.1
+          @semantic-release/git@10.0.1
+          conventional-changelog-conventionalcommits@5.0.0
         required: false
         type: string
 
