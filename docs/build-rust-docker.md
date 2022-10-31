@@ -5,11 +5,21 @@
 
 This workflow builds Rust projects to Docker images using [cargo-make](https://github.com/sagiegurari/cargo-make).
 
-#
+## Rust setup
+
+Setup your toolchain requirements in `rust-toolchain.toml`:
+
+```toml
+[toolchain]
+channel = "1.63.0"
+components = [
+  "rustfmt",
+  "clippy",
+]
+profile = "minimal"
+```
 
 ## Workflow setup
-
-#
 
 Recommended `.github/workflows/build.yml`:
 
@@ -34,11 +44,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
 
-#
-
 ## semantic-release
-
-#
 
 Recommended `.releaserc.json`:
 
