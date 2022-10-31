@@ -24,3 +24,13 @@ jobs:
           BASE="${{ github.base_ref }}"
           git fetch origin "$BASE"
           yarn run commitlint -f $(git rev-parse "origin/$BASE") -t $(git rev-parse HEAD)
+
+      - name: Run semantic-release (dry-run)
+        run: |
+          # Trick semantic-release into dry-running on the target branch
+          git update-ref refs/heads/$GITHUB_BASE_REF HEAD
+          git checkout -f $GITHUB_BASE_REF
+          unset GITHUB_ACTIONS
+          yarn release --dry-run --no-ci
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
