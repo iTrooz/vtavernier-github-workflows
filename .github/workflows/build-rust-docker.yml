@@ -162,6 +162,15 @@ on:
         description: semantic-release token
         required: true
 
+    outputs:
+      docker_image_floating:
+        description: Generated floating Docker image name
+        value: ${{ jobs.build-rust-docker.outputs.docker_image_floating }}
+
+      docker_image_tagged:
+        description: Generated tagged Docker image name
+        value: ${{ jobs.build-rust-docker.outputs.docker_image_tagged }}
+
 jobs:
   check-rust-docker:
     runs-on: ubuntu-latest
@@ -288,6 +297,11 @@ jobs:
 
   build-rust-docker:
     runs-on: ubuntu-latest
+
+    outputs:
+      docker_image_floating: ${{ steps.image.outputs.repository }}:${{ steps.image.outputs.label }}
+      docker_image_tagged: ${{ steps.image.outputs.repository_tag }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
