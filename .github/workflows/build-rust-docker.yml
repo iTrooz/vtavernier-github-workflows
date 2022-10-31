@@ -97,6 +97,68 @@ on:
         required: true
 
 jobs:
+  check-rust-docker:
+    runs-on: ubuntu-latest
+
+    env:
+      RUSTFLAGS: -D warnings
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # Dry-run semantic release first in case something is wrong
+      - name: Semantic Release (Dry-Run)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dry_run: true
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}
+
+      # Calling rustup show will install the toolchain in rust-toolchain
+      - name: Install toolchain
+        id: rustup
+        run: rustup show
+
+      # Install cargo-make which will drive the build
+      - name: Install cargo-make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: ${{ inputs.cargo_make_version }}
+
+      # Bump version, if requested by semantic-release
+      - name: Bump crate version
+        run: cargo make ci-bump-version ${{ steps.semantic.outputs.new_release_version }}
+        if: steps.semantic.outputs.new_release_published == 'true'
+
+      - name: Run cargo fmt
+        run: cargo fmt -- --check
+        if: steps.rustup.outcome == 'success'
+
+      - name: Run cargo check
+        run: cargo check
+        if: steps.rustup.outcome == 'success' && (success() || failure())
+
+      - name: Run cargo clippy
+        run: cargo clippy
+        if: steps.rustup.outcome == 'success' && (success() || failure())
+
   build-rust-docker:
     runs-on: ubuntu-latest
     steps:
@@ -114,8 +176,14 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup build cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            target/
+          key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock') }}
 
       # Dry-run semantic release first in case something is wrong
       - name: Semantic Release (Dry-Run)
