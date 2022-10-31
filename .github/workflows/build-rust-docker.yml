@@ -208,6 +208,9 @@ jobs:
         run: cargo make ci-bump-version ${{ steps.semantic.outputs.new_release_version }}
         if: steps.semantic.outputs.new_release_published == 'true'
 
+      - name: Prepare checks
+        run: cargo make ci-pre-check
+
       - name: Run cargo fmt
         run: cargo fmt -- --check
         if: steps.rustup.outcome == 'success'
