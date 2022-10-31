@@ -1,0 +1,204 @@
+# This workflow builds Rust projects to Docker images using
+# [cargo-make](https://github.com/sagiegurari/cargo-make).
+#
+# ## Workflow setup
+#
+# Recommended `.github/workflows/build.yml`:
+# ```yaml
+# name: build
+#
+# on:
+#   pull_request: {}
+#   push:
+#     branches:
+#       - master
+#       - dev
+#     tags-ignore:
+#       - "**"
+#
+# jobs:
+#   build:
+#     uses: vtavernier/github-workflows/.github/workflows/build-rust-docker.yml@WORKFLOW_VERSION
+#     secrets:
+#       docker_password: ${{ secrets.GITHUB_TOKEN }}
+#       # Used by semantic-release for pushing to master
+#       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+# ```
+#
+# ## semantic-release
+#
+# Recommended `.releaserc.json`:
+# ```json
+# {
+#   "plugins": [
+#     "@semantic-release/commit-analyzer",
+#     "@semantic-release/release-notes-generator",
+#     "@semantic-release/changelog",
+#     [
+#       "@semantic-release/git",
+#       {
+#         "assets": ["CHANGELOG.md", "Cargo.lock", "Cargo.toml"],
+#         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+#       }
+#     ],
+#     "@semantic-release/github"
+#   ]
+# }
+# ```
+
+on:
+  workflow_call:
+    inputs:
+      cargo_make_version:
+        description: Version of cargo-make to use
+        default: 0.36.2
+        required: false
+        type: string
+
+      docker_repository:
+        description: "Target Docker repository, e.g. ghcr.io/user/project"
+        default: ghcr.io/${{ github.repository }}
+        required: false
+        type: string
+
+      docker_registry:
+        description: "Target Docker registry, e.g. ghcr.io"
+        default: ghcr.io
+        required: false
+        type: string
+
+      docker_username:
+        description: Target Docker username
+        default: ${{ github.repository_owner }}
+        required: false
+        type: string
+
+      semantic_extra_plugins:
+        description: List of semantic-release extra plugins to install
+        default: |
+          @semantic-release/changelog
+          @semantic-release/git
+        required: false
+        type: string
+
+      semantic_version:
+        description: Version of semantic-release to use
+        default: 19.0.5
+        required: false
+        type: string
+
+    secrets:
+      docker_password:
+        description: Target Docker password
+        required: false
+
+      GH_TOKEN:
+        description: semantic-release token
+        required: true
+
+jobs:
+  build-rust-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # Dry-run semantic release first in case something is wrong
+      - name: Semantic Release (Dry-Run)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dry_run: true
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}
+
+      # Calling rustup show will install the toolchain in rust-toolchain
+      - name: Install toolchain
+        id: rustup
+        run: rustup show
+
+      # Install cargo-make which will drive the build
+      - name: Install cargo-make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: ${{ inputs.cargo_make_version }}
+
+      # Bump version, if requested by semantic-release
+      - name: Bump crate version
+        run: cargo make ci-bump-version ${{ steps.semantic.outputs.new_release_version }}
+        if: steps.semantic.outputs.new_release_published == 'true'
+
+      # Prepare Docker build
+      - name: Prepare Docker build
+        run: cargo make ci-pre-docker
+
+      # Setup Docker buildx
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Login to target registry
+      - name: Login to Docker registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.docker_registry }}
+          username: ${{ inputs.docker_username }}
+          password: ${{ secrets.docker_password }}
+
+      - name: Compute target image labels
+        id: image
+        run: |
+          GITHUB_REF='${{ github.ref }}'
+          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
+            LABEL=latest
+            PUSH=true
+          else
+            LABEL="$(echo -n "$GITHUB_REF" | sed 's#refs/heads/##' | sed 's#/#--#g')"
+            PUSH=false
+          fi
+
+          echo "label=$LABEL" >> $GITHUB_OUTPUT
+          echo "push=$PUSH" >> $GITHUB_OUTPUT
+          echo "repository=${{ inputs.docker_repository }}" >> $GITHUB_OUTPUT
+          if [[ "${{ steps.semantic.outputs.new_release_published }}" == "true" ]]; then
+            echo "repository_tag=${{ inputs.docker_repository }}:${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+          else
+            echo "repository_tag=" >> $GITHUB_OUTPUT
+          fi
+
+      # '" (fix syntax highlighting)
+
+      - name: Build and push image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          tags: |
+            ${{ steps.image.outputs.repository }}:${{ steps.image.outputs.label }}
+            ${{ steps.image.outputs.repository_tag }}
+          push: ${{ steps.image.outputs.push }}
+
+      # On master, actually run semantic release
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
