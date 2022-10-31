@@ -135,7 +135,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Setup cargo cache
+      - name: Setup Rust cache
         uses: actions/cache@v3
         with:
           path: |
@@ -143,7 +143,8 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            target/
+          key: ${{ runner.os }}-check-rust-docker-${{ hashFiles('**/Cargo.lock') }}
 
       # Dry-run semantic release first in case something is wrong
       - name: Semantic Release (Dry-Run)
@@ -199,7 +200,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Setup cargo cache
+      - name: Setup Rust cache
         uses: actions/cache@v3
         with:
           path: |
@@ -207,14 +208,8 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Setup build cache
-        uses: actions/cache@v3
-        with:
-          path: |
             target/
-          key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-test-rust-${{ hashFiles('**/Cargo.lock') }}
 
       # Dry-run semantic release first in case something is wrong
       - name: Semantic Release (Dry-Run)
@@ -256,7 +251,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Setup cargo cache
+      - name: Setup Rust cache
         uses: actions/cache@v3
         with:
           path: |
@@ -264,14 +259,8 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Setup build cache
-        uses: actions/cache@v3
-        with:
-          path: |
             target/
-          key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-build-rust-docker-${{ hashFiles('**/Cargo.lock') }}
 
       # Dry-run semantic release first in case something is wrong
       - name: Semantic Release (Dry-Run)
@@ -348,6 +337,8 @@ jobs:
             ${{ steps.image.outputs.repository }}:${{ steps.image.outputs.label }}
             ${{ steps.image.outputs.repository_tag }}
           push: ${{ steps.image.outputs.push }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # On master, actually run semantic release
       - name: Semantic Release
