@@ -71,7 +71,7 @@ EOT
   awk '\
     BEGIN { inc=1; } \
     !/^#/ { inc=0; exit } \
-    /^#/ && inc { a=gensub(/^# /, "", "g", $0); print a }' \
+    /^#/ && inc { a=gensub(/^# ?/, "", "g", $0); print a }' \
     "$WORKFLOW" >>"$TMP"
 
   finalize_file "$WORKFLOW" "$TMP" "$MD"
