@@ -159,6 +159,12 @@ jobs:
         run: cargo clippy
         if: steps.rustup.outcome == 'success' && (success() || failure())
 
+      - name: Run hadolint
+        run: |
+          wget -qO/tmp/hadolint https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64
+          chmod +x /tmp/hadolint
+          /tmp/hadolint
+
   build-rust-docker:
     runs-on: ubuntu-latest
     steps:
