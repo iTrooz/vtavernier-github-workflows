@@ -1,4 +1,5 @@
 {
+  "private": true,
   "scripts": {
     "docs": "./ci/document-workflows.sh",
     "docs:check": "./ci/document-workflows.sh --check",
