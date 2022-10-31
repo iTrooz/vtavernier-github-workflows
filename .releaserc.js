@@ -50,5 +50,12 @@ module.exports = {
     "@semantic-release/changelog",
     "@semantic-release/github",
     "@semantic-release/git",
+    [
+      "@semantic-release/exec",
+      {
+        verifyConditionsCmd: "./ci/update-rolling-tags.sh -n",
+        publishCmd: "./ci/update-rolling-tags.sh",
+      },
+    ],
   ],
 };
