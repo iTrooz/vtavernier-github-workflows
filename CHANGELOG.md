@@ -1,3 +1,24 @@
+# [1.0.0-alpha.4](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2022-10-31)
+
+
+### Bug Fixes
+
+* **rust-docker:** fix caching behavior ([58f7c1c](https://github.com/vtavernier/github-workflows/commit/58f7c1c99c2501b2efd09c38054aa769d84e739d))
+
+
+### Features
+
+* **rust-docker:** add build workflow ([60599b5](https://github.com/vtavernier/github-workflows/commit/60599b58044b87e7f36cce52e40c2abf3d407371))
+* **rust-docker:** add checks job ([6482379](https://github.com/vtavernier/github-workflows/commit/64823792efcde1f9f801cb8d1e32f63475d6aed0))
+* **rust-docker:** add ci-pre-check task ([00a52b4](https://github.com/vtavernier/github-workflows/commit/00a52b480588101494181a923df060d0c8df8b22))
+* **rust-docker:** add Docker image name outputs ([d83f1a2](https://github.com/vtavernier/github-workflows/commit/d83f1a2217217ab7cfedf74ec04e42bd68c4127b))
+* **rust-docker:** add semantic-release outputs ([e0adbba](https://github.com/vtavernier/github-workflows/commit/e0adbba6c11c8179fc53008b1f81eb7968c64433))
+* **rust-docker:** add test job ([984b225](https://github.com/vtavernier/github-workflows/commit/984b2252be016a48de4a60068620fb3549fe20ee))
+* **rust-docker:** expose checks arguments ([e4f6654](https://github.com/vtavernier/github-workflows/commit/e4f6654af5017b28d7aace3cb4da3f88564726fa))
+* **rust-docker:** expose Dockerfile path input ([7db98bb](https://github.com/vtavernier/github-workflows/commit/7db98bb4f7a3d022df3e5d4192daf159ddb6def5))
+* **rust-docker:** run hadolint in checks ([ee7313a](https://github.com/vtavernier/github-workflows/commit/ee7313ad85dc2015a2360de56bbca3475658273f))
+* **rust-docker:** support dependabot updates ([2f9a8e6](https://github.com/vtavernier/github-workflows/commit/2f9a8e6178e1942c2117f37b3767edc223265ed8))
+
 # [1.0.0-alpha.3](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2022-10-18)
 
 
