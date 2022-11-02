@@ -189,9 +189,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Cargo cache
         uses: actions/cache@v3
@@ -203,17 +200,6 @@ jobs:
             ~/.cargo/git/db/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      # Dry-run semantic release first in case something is wrong
-      - name: Semantic Release (Dry-Run)
-        id: semantic
-        uses: cycjimmy/semantic-release-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          dry_run: true
-          semantic_version: ${{ inputs.semantic_version }}
-          extra_plugins: ${{ inputs.semantic_extra_plugins }}
-
       # Calling rustup show will install the toolchain in rust-toolchain
       - name: Install toolchain
         id: rustup
@@ -224,11 +210,6 @@ jobs:
         uses: davidB/rust-cargo-make@v1
         with:
           version: ${{ inputs.cargo_make_version }}
-
-      # Bump version, if requested by semantic-release
-      - name: Bump crate version
-        run: cargo make ci-bump-version ${{ steps.semantic.outputs.new_release_version }}
-        if: steps.semantic.outputs.new_release_published == 'true'
 
       - name: Prepare checks
         run: cargo make ci-pre-check
@@ -256,9 +237,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup Cargo cache
         uses: actions/cache@v3
@@ -277,17 +255,6 @@ jobs:
             target/
           key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
 
-      # Dry-run semantic release first in case something is wrong
-      - name: Semantic Release (Dry-Run)
-        id: semantic
-        uses: cycjimmy/semantic-release-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          dry_run: true
-          semantic_version: ${{ inputs.semantic_version }}
-          extra_plugins: ${{ inputs.semantic_extra_plugins }}
-
       # Calling rustup show will install the toolchain in rust-toolchain
       - name: Install toolchain
         id: rustup
@@ -298,11 +265,6 @@ jobs:
         uses: davidB/rust-cargo-make@v1
         with:
           version: ${{ inputs.cargo_make_version }}
-
-      # Bump version, if requested by semantic-release
-      - name: Bump crate version
-        run: cargo make ci-bump-version ${{ steps.semantic.outputs.new_release_version }}
-        if: steps.semantic.outputs.new_release_published == 'true'
 
       # Run tests
       - name: Run tests
