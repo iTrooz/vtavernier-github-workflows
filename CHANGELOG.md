@@ -1,3 +1,13 @@
+# [1.0.0-alpha.5](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2022-11-02)
+
+
+### Bug Fixes
+
+* **rust-docker:** do not create multiple caches ([d8d2574](https://github.com/vtavernier/github-workflows/commit/d8d25747b5cfc98b83807f6465aca060888bfdf3))
+* **rust-docker:** fetch dependencies before cargo-make ([4c613fb](https://github.com/vtavernier/github-workflows/commit/4c613fb11e9cb42e39b3a40aef518d947b796cf5))
+* **rust-docker:** only bump version in the build job ([45de35f](https://github.com/vtavernier/github-workflows/commit/45de35f93c9d244eeb59e35147348d755a0ed4cf))
+* **workflows:** fix commitlint range ([fa0d56e](https://github.com/vtavernier/github-workflows/commit/fa0d56e7db7e6bc7fd60d1b7a64ad0dd95f97449))
+
 # [1.0.0-alpha.4](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2022-10-31)
 
 
