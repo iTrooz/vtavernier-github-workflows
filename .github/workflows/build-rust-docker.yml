@@ -211,6 +211,9 @@ jobs:
         with:
           version: ${{ inputs.cargo_make_version }}
 
+      - name: Fetch dependencies
+        run: cargo fetch
+
       - name: Prepare checks
         run: cargo make ci-pre-check
 
@@ -265,6 +268,9 @@ jobs:
         uses: davidB/rust-cargo-make@v1
         with:
           version: ${{ inputs.cargo_make_version }}
+
+      - name: Fetch dependencies
+        run: cargo fetch
 
       # Run tests
       - name: Run tests
@@ -324,6 +330,9 @@ jobs:
         uses: davidB/rust-cargo-make@v1
         with:
           version: ${{ inputs.cargo_make_version }}
+
+      - name: Fetch dependencies
+        run: cargo fetch
 
       # Bump version, if requested by semantic-release
       - name: Bump crate version
