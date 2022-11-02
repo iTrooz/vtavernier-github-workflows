@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Install dependencies using yarn
         run: yarn install --frozen-lockfile
@@ -20,10 +22,7 @@ jobs:
         run: yarn ci:check
 
       - name: Check commits
-        run: |
-          BASE="${{ github.base_ref }}"
-          git fetch origin "$BASE"
-          yarn run commitlint -f $(git rev-parse "origin/$BASE") -t $(git rev-parse HEAD)
+        run: yarn run commitlint -f ${{ github.event.pull_request.base.sha }} -t ${{ github.event.pull_request.head.sha }} --verbose
 
       - name: Run semantic-release (dry-run)
         run: |
