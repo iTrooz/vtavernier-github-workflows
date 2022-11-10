@@ -1,3 +1,10 @@
+# [1.0.0-alpha.6](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2022-11-10)
+
+
+### Features
+
+* **rust-docker:** add docker image metadata ([241b20c](https://github.com/vtavernier/github-workflows/commit/241b20c0f7c22cfcab0f7a39fb2c4bd1e0fdc71b))
+
 # [1.0.0-alpha.5](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2022-11-02)
 
 
