@@ -280,8 +280,8 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      docker_image_floating: ${{ steps.image.outputs.repository }}:${{ steps.image.outputs.label }}
-      docker_image_tagged: ${{ steps.image.outputs.repository_tag }}
+      docker_image_tags: ${{ steps.meta.outputs.tags }}
+      docker_image: ${{ steps.meta.outputs.json }}
       new_release_published: ${{ steps.semantic.outputs.new_release_published }}
       new_release_version: ${{ steps.semantic.outputs.new_release_version }}
 
@@ -356,38 +356,28 @@ jobs:
           username: ${{ inputs.docker_username }}
           password: ${{ secrets.docker_password }}
 
-      - name: Compute target image labels
-        id: image
-        run: |
-          GITHUB_REF='${{ github.ref }}'
-          if [[ "$GITHUB_REF" == "refs/heads/master" ]]; then
-            LABEL=latest
-            PUSH=true
-          else
-            LABEL="$(echo -n "$GITHUB_REF" | sed 's#refs/heads/##' | sed 's#/#--#g')"
-            PUSH=false
-          fi
-
-          echo "label=$LABEL" >> $GITHUB_OUTPUT
-          echo "push=$PUSH" >> $GITHUB_OUTPUT
-          echo "repository=${{ inputs.docker_repository }}" >> $GITHUB_OUTPUT
-          if [[ "${{ steps.semantic.outputs.new_release_published }}" == "true" ]]; then
-            echo "repository_tag=${{ inputs.docker_repository }}:${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_OUTPUT
-          else
-            echo "repository_tag=" >> $GITHUB_OUTPUT
-          fi
-
-      # '" (fix syntax highlighting)
+      - name: Compute Docker image metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ inputs.docker_repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}},enabled=${{ steps.semantic.outputs.new_release_published }},value=${{ steps.semantic.outputs.new_release_version }}
+            type=semver,pattern={{major}}.{{minor}},enabled=${{ steps.semantic.outputs.new_release_published }},value=${{ steps.semantic.outputs.new_release_version }}
+            type=semver,pattern={{major}},enabled=${{ steps.semantic.outputs.new_release_published }},value=${{ steps.semantic.outputs.new_release_version }}
+            type=sha
 
       - name: Build and push image
         uses: docker/build-push-action@v3
         with:
           context: .
           file: ${{ inputs.docker_dockerfile }}
-          tags: |
-            ${{ steps.image.outputs.repository }}:${{ steps.image.outputs.label }}
-            ${{ steps.image.outputs.repository_tag }}
-          push: ${{ steps.image.outputs.push }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.output.labels }}
+          push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
