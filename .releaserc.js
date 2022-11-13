@@ -49,11 +49,17 @@ module.exports = {
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
     "@semantic-release/github",
-    "@semantic-release/git",
     [
       "@semantic-release/exec",
       {
-        verifyConditionsCmd: "./ci/update-pinned-actions.sh -c",
+        verifyConditionsCmd: "./ci/update-pinned-actions.sh -n",
+        prepareCmd: "./ci/update-pinned-actions.sh",
+      },
+    ],
+    [
+      "@semantic-release/git",
+      {
+        assets: ["CHANGELOG.md", ".github/workflows/*.yml"],
       },
     ],
     [
