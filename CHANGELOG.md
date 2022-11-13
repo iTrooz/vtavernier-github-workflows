@@ -1,3 +1,11 @@
+# [1.0.0-alpha.7](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2022-11-13)
+
+
+### Features
+
+* **rust-docker:** add develop_branch_name input ([513fb9c](https://github.com/vtavernier/github-workflows/commit/513fb9c08b321231bbf4cdaadcd0b62ce1240ae5))
+* **rust:** add check workflow ([99b2793](https://github.com/vtavernier/github-workflows/commit/99b2793eed31c5103b0c5a314f1d1ec7eb0f4855))
+
 # [1.0.0-alpha.6](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2022-11-10)
 
 
