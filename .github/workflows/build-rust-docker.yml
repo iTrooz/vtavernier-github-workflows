@@ -223,7 +223,7 @@ jobs:
         run: cargo make ci-pre-check
 
       - name: Run Rust checks
-        uses: vtavernier/github-workflows/actions/check-rust@a86232362f575ab722d92090337d72087b87f682
+        uses: vtavernier/github-workflows/actions/check-rust@734b80d6bc95c6d356b54b453848e945f0d32e4c
         with:
           rust_checks_rustflags: ${{ inputs.rust_checks_rustflags }}
           rust_checks_args: ${{ inputs.rust_checks_args }}
