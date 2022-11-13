@@ -1,0 +1,82 @@
+# This workflow checks Rust projects.
+#
+# ## Rust setup
+#
+# Setup your toolchain requirements in `rust-toolchain.toml`:
+# ```toml
+# [toolchain]
+# channel = "1.63.0"
+# components = [
+#   "rustfmt",
+#   "clippy",
+# ]
+# profile = "minimal"
+# ```
+#
+# ## Workflow setup
+#
+# Recommended `.github/workflows/build.yml`:
+# ```yaml
+# name: build
+#
+# on:
+#   pull_request: {}
+#   push:
+#     branches:
+#       - master
+#       - dev # If you have a "develop" branch
+#     tags-ignore:
+#       - "**"
+#
+# jobs:
+#   check:
+#     uses: vtavernier/github-workflows/.github/workflows/check-rust.yml@WORKFLOW_VERSION
+# ```
+
+on:
+  workflow_call:
+    inputs:
+      rust_checks_rustflags:
+        description: RUSTFLAGS for running check tasks
+        default: -D warnings
+        required: false
+        type: string
+
+      rust_checks_args:
+        description: Common arguments to check tasks
+        default: --all-features
+        required: false
+        type: string
+
+jobs:
+  check-rust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # Calling rustup show will install the toolchain in rust-toolchain
+      - name: Install toolchain
+        id: rustup
+        run: rustup show
+
+      - name: Fetch dependencies
+        run: cargo fetch
+
+      - name: Run Rust checks
+        uses: vtavernier/github-workflows/actions/check-rust@734b80d6bc95c6d356b54b453848e945f0d32e4c
+        with:
+          rust_checks_rustflags: ${{ inputs.rust_checks_rustflags }}
+          rust_checks_args: ${{ inputs.rust_checks_args }}
+        if: steps.rustup.outcome == 'success'
