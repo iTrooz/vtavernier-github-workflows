@@ -25,13 +25,15 @@
 #   push:
 #     branches:
 #       - master
-#       - dev
+#       - dev # If you have a "develop" branch
 #     tags-ignore:
 #       - "**"
 #
 # jobs:
 #   build:
 #     uses: vtavernier/github-workflows/.github/workflows/build-rust-docker.yml@WORKFLOW_VERSION
+#     with:
+#       develop_branch_name: dev # If you have a `develop` branch
 #     secrets:
 #       docker_password: ${{ secrets.GITHUB_TOKEN }}
 #       # Used by semantic-release for pushing to master
@@ -111,6 +113,12 @@ on:
       rust_checks_args:
         description: Common arguments to check tasks
         default: --all-features
+        required: false
+        type: string
+
+      develop_branch_name:
+        description: Name of the branch with the `develop` role. Can be left empty if thre is no such branch
+        default: ""
         required: false
         type: string
 
@@ -389,4 +397,4 @@ jobs:
         with:
           semantic_version: ${{ inputs.semantic_version }}
           extra_plugins: ${{ inputs.semantic_extra_plugins }}
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || (inputs.develop_branch_name == '' || github.ref == format('refs/heads/{0}', inputs.develop_branch_name))

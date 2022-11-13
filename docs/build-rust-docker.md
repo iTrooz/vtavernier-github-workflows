@@ -31,13 +31,15 @@ on:
   push:
     branches:
       - master
-      - dev
+      - dev # If you have a "develop" branch
     tags-ignore:
       - "**"
 
 jobs:
   build:
     uses: vtavernier/github-workflows/.github/workflows/build-rust-docker.yml@WORKFLOW_VERSION
+    with:
+      develop_branch_name: dev # If you have a `develop` branch
     secrets:
       docker_password: ${{ secrets.GITHUB_TOKEN }}
       # Used by semantic-release for pushing to master
