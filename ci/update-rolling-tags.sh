@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+source "$(dirname "${BASH_SOURCE[0]}")/utils.sh"
+
 while getopts ":n" opt; do
   case "$opt" in
     n)
@@ -12,22 +14,15 @@ while getopts ":n" opt; do
   esac
 done
 
-if [[ ! -v VERSION_TAGS ]]; then
-  VERSION_TAGS=$(git tag -l | awk '/^v/ && !/alpha|beta/ {print}')
-fi
-
 if [[ ! -v DRY_RUN ]]; then
   DRY_RUN=0
 fi
 
-CREATED_TAGS=()
+if [[ ! -v VERSION_TAGS ]]; then
+  VERSION_TAGS=$(git tag -l | awk '/^v/ && !/alpha|beta/ {print}')
+fi
 
-dry_run () {
-  echo "$@"
-  if [[ $DRY_RUN == 0 ]]; then
-    "$@"
-  fi
-}
+CREATED_TAGS=()
 
 git_tag () {
   dry_run git tag -f "$@"

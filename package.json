@@ -7,10 +7,12 @@
     "format:check": "prettier --ignore-path .gitignore --check . '!CHANGELOG.md'",
     "lint": "run-s -c lint:eslint lint:shell",
     "lint:fix": "run-s -c lint:eslint:fix",
-    "lint:eslint": "eslint --ignore-path .gitignore .github",
-    "lint:eslint:fix": "eslint --ignore-path .gitignore --fix .github",
+    "lint:eslint": "eslint --ignore-path .gitignore .github actions",
+    "lint:eslint:fix": "eslint --ignore-path .gitignore --fix .github actions",
     "lint:shell": "shellcheck **/*.sh",
-    "ci:check": "run-s -c docs:check format:check lint",
+    "ci:check": "run-s -c docs:check format:check pin:check lint",
+    "pin": "./ci/update-pinned-actions.sh",
+    "pin:check": "./ci/update-pinned-actions.sh -c",
     "release": "semantic-release"
   },
   "devDependencies": {

@@ -53,6 +53,12 @@ module.exports = {
     [
       "@semantic-release/exec",
       {
+        verifyConditionsCmd: "./ci/update-pinned-actions.sh -c",
+      },
+    ],
+    [
+      "@semantic-release/exec",
+      {
         verifyConditionsCmd: "./ci/update-rolling-tags.sh -n",
         publishCmd: "./ci/update-rolling-tags.sh",
       },

@@ -1,0 +1,33 @@
+name: Check Rust code
+description: Runs common checking tools on a Rust project
+
+inputs:
+  rust_checks_rustflags:
+    description: RUSTFLAGS for running check tasks
+    default: -D warnings
+    required: false
+
+  rust_checks_args:
+    description: Common arguments to check tasks
+    default: --all-features
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - run: cargo fmt -- --check
+      shell: bash
+      env:
+        RUSTFLAGS: ${{ inputs.rust_checks_rustflags }}
+
+    - run: cargo check ${{ inputs.rust_checks_args }}
+      shell: bash
+      env:
+        RUSTFLAGS: ${{ inputs.rust_checks_rustflags }}
+      if: success() || failure()
+
+    - run: cargo clippy ${{ inputs.rust_checks_args }}
+      shell: bash
+      env:
+        RUSTFLAGS: ${{ inputs.rust_checks_rustflags }}
+      if: success() || failure()

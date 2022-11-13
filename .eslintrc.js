@@ -9,6 +9,10 @@ module.exports = {
             fileMatch: [".github/workflows/*.yml"],
             schema: "https://json.schemastore.org/github-workflow.json",
           },
+          {
+            fileMatch: ["actions/*/action.yml"],
+            schema: "https://json.schemastore.org/github-action.json",
+          },
         ],
       },
     ],
