@@ -1,3 +1,11 @@
+# [1.0.0-alpha.8](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.7...v1.0.0-alpha.8) (2022-11-16)
+
+
+### Bug Fixes
+
+* **rust-docker:** fix workflow outputs ([f8f2e23](https://github.com/vtavernier/github-workflows/commit/f8f2e233143360ea047b84aff354bd8c62347d1a))
+* **rust-docker:** update develop branch back on release ([6ca146c](https://github.com/vtavernier/github-workflows/commit/6ca146c8127ca63dbe30530bc7fe2cf81e6bffb7))
+
 # [1.0.0-alpha.7](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2022-11-13)
 
 
