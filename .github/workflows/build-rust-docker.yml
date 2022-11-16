@@ -171,13 +171,13 @@ on:
         required: true
 
     outputs:
-      docker_image_floating:
-        description: Generated floating Docker image name
-        value: ${{ jobs.build-rust-docker.outputs.docker_image_floating }}
+      docker_image_tags:
+        description: Generated Docker image tags
+        value: ${{ jobs.build-rust-docker.outputs.docker_image_tags }}
 
-      docker_image_tagged:
-        description: Generated tagged Docker image name
-        value: ${{ jobs.build-rust-docker.outputs.docker_image_tagged }}
+      docker_image:
+        description: Docker image details
+        value: ${{ jobs.build-rust-docker.outputs.docker_image }}
 
       new_release_published:
         description: True if a new version is published by semantic-release
