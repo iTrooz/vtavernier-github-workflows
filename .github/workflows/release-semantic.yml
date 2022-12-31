@@ -1,0 +1,78 @@
+# This workflow runs semantic-release on the repository.
+
+on:
+  workflow_call:
+    inputs:
+      develop_branch_name:
+        description: Name of the branch with the `develop` role. Can be left empty if thre is no such branch
+        default: ""
+        required: false
+        type: string
+
+      semantic_extra_plugins:
+        description: List of semantic-release extra plugins to install
+        default: |
+          @semantic-release/changelog@6.0.1
+          @semantic-release/git@10.0.1
+          @semantic-release/exec@6.0.3
+          conventional-changelog-conventionalcommits@5.0.0
+        required: false
+        type: string
+
+      semantic_version:
+        description: Version of semantic-release to use
+        default: 19.0.5
+        required: false
+        type: string
+
+      artifact-name:
+        description: Name of the GitHub artifact to retrieve before releasing. Leave empty to disable download.
+        required: false
+        type: string
+
+    secrets:
+      GH_TOKEN:
+        description: semantic-release token
+        required: true
+
+    outputs:
+      new_release_published:
+        description: True if a new version is published by semantic-release
+        value: ${{ jobs.release-semantic.outputs.new_release_published }}
+
+      new_release_version:
+        description: Version number of the new published release
+        value: ${{ jobs.release-semantic.outputs.new_release_version }}
+
+jobs:
+  release-semantic:
+    runs-on: ubuntu-latest
+
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      # Download artifacts
+      - name: Download artifacts to dist/
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist/
+        if: inputs.artifact-name != ''
+
+      # On master, actually run semantic release
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}

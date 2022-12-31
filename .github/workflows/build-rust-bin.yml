@@ -1,0 +1,201 @@
+# This workflow builds Rust binaries using
+# [cargo-make](https://github.com/sagiegurari/cargo-make).
+#
+# ## Rust setup
+#
+# Setup your toolchain requirements in `rust-toolchain.toml`:
+# ```toml
+# [toolchain]
+# channel = "1.63.0"
+# components = [
+#   "rustfmt",
+#   "clippy",
+# ]
+# profile = "minimal"
+# ```
+#
+# ## Workflow setup
+#
+# Recommended `.github/workflows/build.yml`:
+# ```yaml
+# name: build
+#
+# on:
+#   pull_request: {}
+#   push:
+#     branches:
+#       - master
+#       - dev
+#     tags-ignore:
+#       - "**"
+#
+# jobs:
+#   build:
+#     uses: vtavernier/github-workflows/.github/workflows/build-rust-bin.yml@WORKFLOW_VERSION
+#     secrets:
+#       # Used by semantic-release for pushing to master
+#       GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+# ```
+#
+# ## semantic-release
+#
+# Recommended `.releaserc.json`:
+# ```json
+# {
+#     "plugins": [
+#         "@semantic-release/commit-analyzer",
+#         "@semantic-release/release-notes-generator",
+#         "@semantic-release/changelog",
+#         [
+#             "@semantic-release/git",
+#             {
+#                 "assets": [
+#                     "CHANGELOG.md",
+#                     "Cargo.lock",
+#                     "Cargo.toml"
+#                 ],
+#                 "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+#             }
+#         ],
+#         [
+#             "@semantic-release/github",
+#             {
+#                 "assets": "dist/*"
+#             }
+#         ]
+#     ]
+# }
+# ```
+
+on:
+  workflow_call:
+    inputs:
+      cargo_make_version:
+        description: Version of cargo-make to use
+        default: 0.36.2
+        required: false
+        type: string
+
+      semantic_extra_plugins:
+        description: List of semantic-release extra plugins to install
+        default: |
+          @semantic-release/changelog@6.0.1
+          @semantic-release/git@10.0.1
+          @semantic-release/exec@6.0.3
+          conventional-changelog-conventionalcommits@5.0.0
+        required: false
+        type: string
+
+      semantic_version:
+        description: Version of semantic-release to use
+        default: 19.0.5
+        required: false
+        type: string
+
+      runs-on:
+        description: GitHub runner to target
+        default: ubuntu-latest
+        required: false
+        type: string
+
+      rust-target:
+        description: Rust target triple to build for
+        default: x86_64-unknown-linux-gnu
+        required: false
+        type: string
+
+      artifact-name:
+        description: Name of the GitHub artifact to upload to. Leave empty to disable upload.
+        required: false
+        type: string
+
+    secrets:
+      GH_TOKEN:
+        description: semantic-release token
+        required: true
+
+    outputs:
+      new_release_published:
+        description: True if a new version is published by semantic-release
+        value: ${{ jobs.build-rust-bin.outputs.new_release_published }}
+
+      new_release_version:
+        description: Version number of the new published release
+        value: ${{ jobs.build-rust-bin.outputs.new_release_version }}
+
+jobs:
+  build-rust-bin:
+    runs-on: ${{ inputs.runs-on }}
+
+    env:
+      CARGO_BUILD_TARGET: ${{ inputs.rust-target }}
+
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup Rust cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            target/
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+
+      # Dry-run semantic release first in case something is wrong
+      - name: Semantic Release (Dry-Run)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dry_run: true
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}
+
+      # Calling rustup show will install the toolchain in rust-toolchain
+      - name: Install toolchain
+        id: rustup
+        run: rustup show
+
+      # Install cargo-make which will drive the build
+      - name: Install cargo-make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: ${{ inputs.cargo_make_version }}
+
+      - name: Fetch dependencies
+        run: cargo fetch
+
+      # Bump version, if requested by semantic-release
+      - name: Bump crate version
+        run: cargo make ci-bump-version ${{ steps.semantic.outputs.new_release_version }}
+        if: steps.semantic.outputs.new_release_published == 'true'
+
+      # Run binary build
+      - name: Build binaries
+        run: cargo make ci-build
+
+      # Upload artifacts
+      - name: Upload binaries from dist/
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist/
+        if: inputs.artifact-name != ''
