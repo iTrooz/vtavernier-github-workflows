@@ -1,0 +1,92 @@
+name: Run commitlint
+description: Run commitlint to validate the commit history
+inputs:
+  lint-from:
+    description: Commit SHA to start linting commits from
+    default: ""
+  lint-to:
+    description: Commit SHA to stop linting at
+    default: ""
+  setup-node:
+    description: Setup Node as part of this action
+    default: auto
+  npx:
+    description: npx command to use for invoking Node tools. Ignored if setup-node == 'true' or 'auto'.
+    default: npx --no --
+runs:
+  using: composite
+  steps:
+    - id: commitlint-metadata
+      run: |
+        # Detect if package.json is present in the target project
+        if [ -f package.json ]; then
+          echo "package.json found in the repository, using this for npm dependencies"
+
+          # We have a package.json, but do we have a package-lock.json?
+          if ! [ -f package-lock.json ]; then
+            # Package pinning is mandatory
+            echo "::error file=package.json::Missing package-lock.json. Please run npm install and add the package-lock.json to your repository to pin the dependencies"
+            exit 1
+          fi
+
+          SETUP_NODE_AUTO=false
+        else
+          # There is no package.json in the target repository, use the one from action-aws
+          PREFIX="${{ github.action_path }}/../lib/commitlint"
+          PACKAGE_JSON="$PREFIX/package.json"
+          PACKAGE_LOCK_JSON="$PREFIX/package-lock.json"
+
+          WORKSPACE_PACKAGE_JSON="${{ github.workspace }}/package.json"
+          WORKSPACE_PACKAGE_LOCK_JSON="${{ github.workspace }}/package-lock.json"
+
+          echo "package.json not found in the repository, using the one from actions-aws/semantic-release"
+
+          # Compute repository details
+          REPOSITORY_NAME="$(echo -n "${{ github.repository }}" | awk -F/ '{print $NF}')"
+          REPOSITORY_URL="${{ github.repositoryUrl }}"
+
+          # Replace placeholders in package.json
+          sed "s#placeholder-repository-name#$REPOSITORY_NAME#; s#placeholder-repository-url#$REPOSITORY_URL#" $PACKAGE_JSON > "$WORKSPACE_PACKAGE_JSON"
+
+          # Deploy package-lock.json
+          cp "$PACKAGE_LOCK_JSON" "$WORKSPACE_PACKAGE_LOCK_JSON"
+
+          echo "Generated package.json:"
+          cat "$WORKSPACE_PACKAGE_JSON"
+
+          SETUP_NODE_AUTO=true
+        fi
+
+        # Compute node-setup information
+        echo "setup-node-auto=$SETUP_NODE_AUTO" >> $GITHUB_OUTPUT
+
+        if [ "${{ inputs.setup-node }}" = "true" ]; then
+          SETUP_NODE=true
+        elif [ "${{ inputs.setup-node }}" = "auto" ] && [ "$SETUP_NODE_AUTO" = "true" ]; then
+          SETUP_NODE=true
+        else
+          SETUP_NODE=false
+        fi
+
+        echo "setup-node=$SETUP_NODE" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Setup Node
+      id: commitlint-setup-node
+      if: steps.commitlint-metadata.outputs.setup-node
+      uses: vtavernier/github-workflows/actions/node-setup@feat/rust-bin
+
+    - name: Compute npx command
+      id: npx
+      run: |
+        if [ "${{ steps.commitlint-metadata.outputs.setup-node }}" = "true" ]; then
+          echo "npx=${{ steps.commitlint-setup-node.outputs.npx }}" >> $GITHUB_OUTPUT
+        else
+          echo "npx=${{ inputs.npx }}" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Lint commits
+      if: inputs.lint-from != '' && inputs.lint-to != ''
+      run: ${{ steps.npx.outputs.npx }} commitlint -f ${{ inputs.lint-from }} -t ${{ inputs.lint-to }} --verbose
+      shell: bash

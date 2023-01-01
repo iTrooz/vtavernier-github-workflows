@@ -1,0 +1,26 @@
+# Pull request workflow to check semantic-release compatibility.
+
+on:
+  workflow_call: {}
+
+jobs:
+  pullrequest-semantic:
+    runs-on: ubuntu-latest
+
+    steps:
+      # This can happen before checkout because we already have all the metadata
+      - name: Check pull request title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check commits
+        uses: vtavernier/github-workflows/actions/commitlint@feat/rust-bin
+        with:
+          lint-from: ${{ github.event.pull_request.base.sha }}
+          lint-to: ${{ github.event.pull_request.head.sha }}

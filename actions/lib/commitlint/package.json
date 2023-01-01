@@ -1,0 +1,36 @@
+{
+  "name": "placeholder-repository-name",
+  "repository": {
+    "type": "git",
+    "url": "placeholder-repository-url"
+  },
+  "scripts": {
+    "commitlint": "commitlint"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "body-max-line-length": [
+        1,
+        "always",
+        100
+      ],
+      "footer-max-line-length": [
+        1,
+        "always",
+        100
+      ],
+      "header-max-length": [
+        1,
+        "always",
+        100
+      ]
+    }
+  }
+}

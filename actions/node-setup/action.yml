@@ -1,0 +1,39 @@
+name: Setup Node
+description: Setup Node and install dependencies using `npm ci`
+inputs:
+  node-version:
+    description: Version of the Node interpreter to use
+    default: "16"
+  prefix:
+    description: Value of --prefix for Node
+    default: ""
+outputs:
+  npm:
+    description: The npm command to invoke given the action configuration
+    value: ${{ steps.node-setup-metadata.outputs.npm }}
+  npx:
+    description: The npx command to invoke given the action configuration
+    value: ${{ steps.node-setup-metadata.outputs.npx }}
+runs:
+  using: composite
+  steps:
+    - name: Setup Node interpreter
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Compute npm command prefix
+      id: node-setup-metadata
+      run: |
+        if [ "${{ inputs.prefix }}" = "" ]; then
+          echo "npm=npm" >> $GITHUB_OUTPUT
+          echo "npx=npx --no --" >> $GITHUB_OUTPUT
+        else
+          echo "npm=npm --prefix ${{ inputs.prefix }}" >> $GITHUB_OUTPUT
+          echo "npx=npx --prefix ${{ inputs.prefix }} --no --" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Install npm dependencies
+      run: ${{ steps.node-setup-metadata.outputs.npm }} ci
+      shell: bash
