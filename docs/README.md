@@ -9,3 +9,11 @@
 ## Check workflows
 
 - [check-rust](check-rust.md)
+
+## Pullrequest workflows
+
+- [pullrequest-semantic](pullrequest-semantic.md)
+
+## Release workflows
+
+- [release-semantic](release-semantic.md)

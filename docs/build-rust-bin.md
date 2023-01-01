@@ -31,15 +31,13 @@ on:
   push:
     branches:
       - master
-      - dev # If you have a "develop" branch
+      - dev
     tags-ignore:
       - "**"
 
 jobs:
   build:
     uses: vtavernier/github-workflows/.github/workflows/build-rust-bin.yml@WORKFLOW_VERSION
-    with:
-      develop_branch_name: dev # If you have a `develop` branch
     secrets:
       # Used by semantic-release for pushing to master
       GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
