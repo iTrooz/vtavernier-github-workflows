@@ -104,6 +104,17 @@ on:
         required: false
         type: string
 
+      upload-coverage-files:
+        description: List of files to upload to the coverage service.
+        default: coverage/info.lcov
+        required: false
+        type: string
+
+      upload-coverage-to:
+        description: Service to upload to for coverage analysis. Leave empty to disable. Can be codecov or coveralls.
+        required: false
+        type: string
+
       artifact-name:
         description: Name of the GitHub artifact to upload to. Leave empty to disable upload.
         required: false
@@ -199,3 +210,30 @@ jobs:
           name: ${{ inputs.artifact-name }}
           path: dist/
         if: inputs.artifact-name != ''
+
+      # Run tests
+      - name: Run tests
+        shell: bash
+        run: |
+          if cargo make --list-all-steps --output-format autocomplete --quiet | grep -E '(^|\W)ci-test($|\W)' >/dev/null 2>&1; then
+            cargo make ci-test
+          else
+            echo "No test task found in Makefile.toml."
+          fi
+
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ inputs.upload-coverage-files }}
+          fail_ci_if_error: true
+          verbose: true
+        if: inputs.upload-coverage-to == 'codecov'
+
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@3284643be2c47fb6432518ecec17f1255e8a06a6
+        with:
+          path-to-lcov: ${{ inputs.upload-coverage-files }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel: true
+          flag-name: coverage-${{ inputs.runs-on }}
+        if: inputs.upload-coverage-to == 'coveralls'
