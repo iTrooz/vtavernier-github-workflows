@@ -74,7 +74,7 @@ runs:
     - name: Setup Node
       id: commitlint-setup-node
       if: steps.commitlint-metadata.outputs.setup-node
-      uses: vtavernier/github-workflows/actions/node-setup@feat/rust-bin
+      uses: vtavernier/github-workflows/actions/node-setup@ec2ac84732c7c0c0570e632f98affd83a72a6ca4
 
     - name: Compute npx command
       id: npx
