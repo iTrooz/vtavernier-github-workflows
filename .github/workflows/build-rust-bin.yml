@@ -135,6 +135,86 @@ on:
         value: ${{ jobs.build-rust-bin.outputs.new_release_version }}
 
 jobs:
+  test-rust-bin:
+    runs-on: ${{ inputs.runs-on }}
+
+    env:
+      CARGO_BUILD_TARGET: ${{ inputs.rust-target }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Setup Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # Dry-run semantic release first in case something is wrong
+      - name: Semantic Release (Dry-Run)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dry_run: true
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}
+
+      # Calling rustup show will install the toolchain in rust-toolchain
+      - name: Install toolchain
+        id: rustup
+        run: rustup show
+
+      # Install cargo-make which will drive the build
+      - name: Install cargo-make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: ${{ inputs.cargo_make_version }}
+
+      - name: Fetch dependencies
+        run: cargo fetch
+
+      # Bump version, if requested by semantic-release
+      - name: Bump crate version
+        run: cargo make ci-bump-version ${{ steps.semantic.outputs.new_release_version }}
+        if: steps.semantic.outputs.new_release_published == 'true'
+
+      # Run tests
+      - name: Run tests
+        shell: bash
+        run: |
+          if cargo make --list-all-steps --output-format autocomplete --quiet | grep -E '(^|\W)ci-test($|\W)' >/dev/null 2>&1; then
+            cargo make ci-test
+          else
+            echo "No test task found in Makefile.toml."
+          fi
+
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ inputs.upload-coverage-files }}
+          fail_ci_if_error: true
+          verbose: true
+        if: inputs.upload-coverage-to == 'codecov'
+
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@3284643be2c47fb6432518ecec17f1255e8a06a6
+        with:
+          path-to-lcov: ${{ inputs.upload-coverage-files }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel: true
+          flag-name: coverage-${{ inputs.runs-on }}
+        if: inputs.upload-coverage-to == 'coveralls'
+
   build-rust-bin:
     runs-on: ${{ inputs.runs-on }}
 
@@ -210,30 +290,3 @@ jobs:
           name: ${{ inputs.artifact-name }}
           path: dist/
         if: inputs.artifact-name != ''
-
-      # Run tests
-      - name: Run tests
-        shell: bash
-        run: |
-          if cargo make --list-all-steps --output-format autocomplete --quiet | grep -E '(^|\W)ci-test($|\W)' >/dev/null 2>&1; then
-            cargo make ci-test
-          else
-            echo "No test task found in Makefile.toml."
-          fi
-
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@v3
-        with:
-          files: ${{ inputs.upload-coverage-files }}
-          fail_ci_if_error: true
-          verbose: true
-        if: inputs.upload-coverage-to == 'codecov'
-
-      - name: Upload coverage to Coveralls
-        uses: coverallsapp/github-action@3284643be2c47fb6432518ecec17f1255e8a06a6
-        with:
-          path-to-lcov: ${{ inputs.upload-coverage-files }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel: true
-          flag-name: coverage-${{ inputs.runs-on }}
-        if: inputs.upload-coverage-to == 'coveralls'
