@@ -1,3 +1,13 @@
+# [1.0.0-alpha.9](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.8...v1.0.0-alpha.9) (2023-01-02)
+
+
+### Features
+
+* add build-rust-bin workflow ([4ecb426](https://github.com/vtavernier/github-workflows/commit/4ecb426524b14ac90440cd3f69cc96fb7cd86ec1))
+* add pullrequest-semantic workflow ([ec2ac84](https://github.com/vtavernier/github-workflows/commit/ec2ac84732c7c0c0570e632f98affd83a72a6ca4))
+* **build-rust-bin:** add coverage support ([7a7f14d](https://github.com/vtavernier/github-workflows/commit/7a7f14d1245d9fe8c1878548b6d8326dfcca6d93))
+* **release-semantic:** add support for CARGO_REGISTRY_TOKEN ([7d65819](https://github.com/vtavernier/github-workflows/commit/7d658199e9a6a0f39fec66c349c8e8c2b33260b6))
+
 # [1.0.0-alpha.8](https://github.com/vtavernier/github-workflows/compare/v1.0.0-alpha.7...v1.0.0-alpha.8) (2022-11-16)
 
 
