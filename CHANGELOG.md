@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/vtavernier/github-workflows/compare/v1.0.0...v1.1.0) (2023-01-14)
+
+
+### Features
+
+* **build-rust-docker:** add @semantic-release/exec plugin by default ([aa63404](https://github.com/vtavernier/github-workflows/commit/aa634041dbfbb4f534174f44c028c5edc183797b))
+
 # 1.0.0 (2023-01-14)
 
 
