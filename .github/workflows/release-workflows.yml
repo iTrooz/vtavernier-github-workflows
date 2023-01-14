@@ -11,6 +11,8 @@ on:
     tags-ignore:
       - "**"
 
+  workflow_dispatch: {}
+
 jobs:
   release-workflows:
     runs-on: ubuntu-latest
