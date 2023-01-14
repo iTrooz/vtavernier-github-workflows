@@ -19,7 +19,7 @@ if [[ ! -v DRY_RUN ]]; then
 fi
 
 if [[ ! -v VERSION_TAGS ]]; then
-  VERSION_TAGS=$(git tag --sort version:refname -l 'v*' | awk '!/alpha|beta/ {print}')
+  VERSION_TAGS=$(git tag --sort version:refname -l 'v*.*.*' | awk '!/alpha|beta/ {print}')
 fi
 
 CREATED_TAGS=()
