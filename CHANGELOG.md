@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/vtavernier/github-workflows/compare/v1.1.0...v1.1.1) (2023-01-14)
+
+
+### Bug Fixes
+
+* fix update-rolling-tags tag detection ([1b95a58](https://github.com/vtavernier/github-workflows/commit/1b95a58a70c5f24c1b5c6df6118bbea2b877a1c7))
+
 # [1.1.0](https://github.com/vtavernier/github-workflows/compare/v1.0.0...v1.1.0) (2023-01-14)
 
 
