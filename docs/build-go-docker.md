@@ -3,7 +3,7 @@
 ![Workflow type: build](https://img.shields.io/badge/workflow-build-blue)
 ![Type: go-docker](https://img.shields.io/badge/type-go-docker-green)
 
-This workflow builds Go projects to Docker images.
+This workflow builds Go projects to Docker images using [Task](https://taskfile.dev/).
 
 ## Workflow setup
 
