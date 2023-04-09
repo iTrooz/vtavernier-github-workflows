@@ -1,0 +1,272 @@
+# This workflow builds Go projects to Docker images.
+#
+# ## Workflow setup
+#
+# Recommended `.github/workflows/build.yml`:
+# ```yaml
+# name: build
+#
+# on:
+#   pull_request: {}
+#   push:
+#     branches:
+#       - master
+#       - dev # If you have a "develop" branch
+#     tags-ignore:
+#       - "**"
+#
+# jobs:
+#   build:
+#     uses: vtavernier/github-workflows/.github/workflows/build-go-docker.yml@WORKFLOW_VERSION
+#     with:
+#       develop_branch_name: dev # If you have a `develop` branch
+#     secrets:
+#       docker_password: ${{ secrets.GITHUB_TOKEN }}
+#       # Used by semantic-release for pushing to master
+#       GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+# ```
+#
+# ## semantic-release
+#
+# Recommended `.releaserc.json`:
+# ```json
+# {
+#   "plugins": [
+#     "@semantic-release/commit-analyzer",
+#     "@semantic-release/release-notes-generator",
+#     "@semantic-release/changelog",
+#     [
+#       "@semantic-release/git",
+#       {
+#         "assets": ["CHANGELOG.md"],
+#         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+#       }
+#     ],
+#     "@semantic-release/github"
+#   ]
+# }
+# ```
+
+on:
+  workflow_call:
+    inputs:
+      go_version:
+        description: Version of Go to use
+        default: 1.20.3
+        required: false
+        type: string
+
+      develop_branch_name:
+        description: Name of the branch with the `develop` role. Can be left empty if thre is no such branch
+        default: ""
+        required: false
+        type: string
+
+      docker_repository:
+        description: "Target Docker repository, e.g. ghcr.io/user/project"
+        default: ghcr.io/${{ github.repository }}
+        required: false
+        type: string
+
+      docker_registry:
+        description: "Target Docker registry, e.g. ghcr.io"
+        default: ghcr.io
+        required: false
+        type: string
+
+      docker_username:
+        description: Target Docker username
+        default: ${{ github.repository_owner }}
+        required: false
+        type: string
+
+      docker_dockerfile:
+        description: Path to the Dockerfile
+        default: Dockerfile
+        required: false
+        type: string
+
+      semantic_extra_plugins:
+        description: List of semantic-release extra plugins to install
+        default: |
+          @semantic-release/changelog@6.0.1
+          @semantic-release/git@10.0.1
+          @semantic-release/exec@6.0.3
+        required: false
+        type: string
+
+      semantic_version:
+        description: Version of semantic-release to use
+        default: 19.0.5
+        required: false
+        type: string
+
+      submodules:
+        description: Checkout submodules
+        default: false
+        required: false
+        type: boolean
+
+    secrets:
+      docker_password:
+        description: Target Docker password
+        required: false
+
+      GH_TOKEN:
+        description: semantic-release token
+        required: true
+
+    outputs:
+      docker_image_tags:
+        description: Generated Docker image tags
+        value: ${{ jobs.build-go-docker.outputs.docker_image_tags }}
+
+      docker_image:
+        description: Docker image details
+        value: ${{ jobs.build-go-docker.outputs.docker_image }}
+
+      new_release_published:
+        description: True if a new version is published by semantic-release
+        value: ${{ jobs.build-go-docker.outputs.new_release_published }}
+
+      new_release_version:
+        description: Version number of the new published release
+        value: ${{ jobs.build-go-docker.outputs.new_release_version }}
+
+jobs:
+  check-go-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: ${{ inputs.submodules }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ inputs.go_version }}
+
+      - name: Run go vet
+        run: go vet
+
+      - name: Run gofmt
+        run: |
+          if [[ "$(gofmt -s -l .)" != "" ]]; then
+            exit 1
+          fi
+
+      - name: Run staticcheck
+        uses: dominikh/staticcheck-action@v1.3.0
+        with:
+          version: 2023.1.3
+
+      - name: Run hadolint
+        run: |
+          wget -qO/tmp/hadolint https://github.com/hadolint/hadolint/releases/download/v2.10.0/hadolint-Linux-x86_64
+          chmod +x /tmp/hadolint
+          /tmp/hadolint ${{ inputs.docker_dockerfile }}
+
+  test-go:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: ${{ inputs.submodules }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ inputs.go_version }}
+
+      # Run tests
+      - name: Run tests
+        run: go test ./...
+
+  build-go-docker:
+    runs-on: ubuntu-latest
+
+    outputs:
+      docker_image_tags: ${{ steps.meta.outputs.tags }}
+      docker_image: ${{ steps.meta.outputs.json }}
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: ${{ inputs.submodules }}
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      # Dry-run semantic release first in case something is wrong
+      - name: Semantic Release (Dry-Run)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dry_run: true
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}
+
+      # Setup Docker buildx
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Login to target registry
+      - name: Login to Docker registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.docker_registry }}
+          username: ${{ inputs.docker_username }}
+          password: ${{ secrets.docker_password }}
+
+      - name: Compute Docker image metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ inputs.docker_repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}},enabled=${{ steps.semantic.outputs.new_release_published }},value=${{ steps.semantic.outputs.new_release_version }}
+            type=semver,pattern={{major}}.{{minor}},enabled=${{ steps.semantic.outputs.new_release_published }},value=${{ steps.semantic.outputs.new_release_version }}
+            type=semver,pattern={{major}},enabled=${{ steps.semantic.outputs.new_release_published }},value=${{ steps.semantic.outputs.new_release_version }}
+            type=sha
+
+      - name: Build and push image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ${{ inputs.docker_dockerfile }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.output.labels }}
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # On master, actually run semantic release
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          semantic_version: ${{ inputs.semantic_version }}
+          extra_plugins: ${{ inputs.semantic_extra_plugins }}
+        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || (inputs.develop_branch_name == '' || github.ref == format('refs/heads/{0}', inputs.develop_branch_name))
+
+      # With a develop branch, semantic-release will commit to master
+      # This needs to be pushed to the corresponding dev branch
+      - name: Update development branch
+        run: |
+          git push origin:${{ inputs.develop_branch_name }}
+        if: >-
+          github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+          inputs.develop_branch_name != '' &&
+          steps.semantic.outputs.new_release_published == 'true'
