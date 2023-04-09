@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/vtavernier/github-workflows/compare/v1.1.1...v1.2.0) (2023-04-09)
+
+
+### Features
+
+* add build-go-docker workflow ([cf28fb5](https://github.com/vtavernier/github-workflows/commit/cf28fb544e69679c11e39263d738a1ca4d8a0b3f))
+* **build-go-docker:** add task runner ([842972f](https://github.com/vtavernier/github-workflows/commit/842972f23f50ae5ddc55f78ea0d5ae7c785fb04e))
+
 ## [1.1.1](https://github.com/vtavernier/github-workflows/compare/v1.1.0...v1.1.1) (2023-01-14)
 
 
