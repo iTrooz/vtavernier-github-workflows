@@ -103,7 +103,7 @@ on:
 
       submodules:
         description: Checkout submodules
-        default: 'false'
+        default: "false"
         required: false
         type: string
 
