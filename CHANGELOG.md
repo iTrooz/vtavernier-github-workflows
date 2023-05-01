@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/vtavernier/github-workflows/compare/v1.2.0...v1.3.0) (2023-05-01)
+
+
+### Features
+
+* **build-go-docker:** switch to golangci-lint for linting ([ca9c27f](https://github.com/vtavernier/github-workflows/commit/ca9c27f19579466552d27ca1771f7d471bee5cde))
+
 # [1.2.0](https://github.com/vtavernier/github-workflows/compare/v1.1.1...v1.2.0) (2023-04-09)
 
 
