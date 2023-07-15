@@ -22,5 +22,5 @@ jobs:
       - name: Check commits
         uses: vtavernier/github-workflows/actions/commitlint@463fff6e61c01fc139d544de20af9e80fdd6ee51
         with:
-          lint-from: ${{ github.event.pull_request.base.sha }}
-          lint-to: ${{ github.event.pull_request.head.sha }}
+          lint-from: HEAD~${{ github.event.pull_request.commits }}
+          lint-to: HEAD
