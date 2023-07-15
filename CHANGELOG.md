@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/vtavernier/github-workflows/compare/v1.3.0...v1.3.1) (2023-07-15)
+
+
+### Bug Fixes
+
+* **pullrequest-semantic:** fix commit range for commitlint ([2b19b3a](https://github.com/vtavernier/github-workflows/commit/2b19b3a30c812bc45d72d2871776dd09063cd4a6)), closes [/github.com/conventional-changelog/commitlint/issues/2568#issuecomment-830680965](https://github.com//github.com/conventional-changelog/commitlint/issues/2568/issues/issuecomment-830680965)
+
 # [1.3.0](https://github.com/vtavernier/github-workflows/compare/v1.2.0...v1.3.0) (2023-05-01)
 
 
