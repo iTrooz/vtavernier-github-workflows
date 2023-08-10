@@ -1,3 +1,9 @@
+# Fork notice
+
+For some reason Github Actions would not let me use reusable workflows I used the fork button.
+This is a fork nonetheless, the upstream is https://github.com/vtavernier/github-workflows/
+You should probably use upstream instead of this, as this fork is only used for my personal changes, and used for https://github.com/iTrooz/efiboot-rs
+
 # [github-workflows](https://github.com/vtavernier/github-workflows)
 
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/vtavernier/github-workflows?display_name=tag&sort=semver)](https://github.com/vtavernier/github-workflows/releases)
